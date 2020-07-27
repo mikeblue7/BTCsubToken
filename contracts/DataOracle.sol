@@ -1,38 +1,32 @@
-pragma solidity ^0.4.25;
-import "github.com/provable-things/ethereum-api/provableAPI_0.4.25.sol";
+pragma solidity ^0.5.0;
+import './lib/Oracle/provableAPI_0.5.sol';
 
-
-contract DateOracle is usingProvable {
-
-    bytes32 coin_pointer; // variable to differentiate different callbacks
-    bytes32 temp_ID;
-    address public owner;
-    bytes32 public BTC=bytes32("BTC"); //32-bytes equivalent of BTC
-    bytes32 public ETH=bytes32("ETH");
-    bytes32 public USDT=bytes32("USD"); 
-    bytes32 public USDC=bytes32("USD");
-    bytes32 public TUSD=bytes32("TUSD");
-    bytes32 public BUSD=bytes32("USD");
-    bytes32 public BCH=bytes32("BCH");
-    bytes32 public XTZ=bytes32("XTZ");
-    bytes32 public COMP=bytes32("COMP");
-    bytes32 public BTCSUB=bytes32("BTCSUB");
-    uint constant CUSTOM_GASLIMIT = 150000;
-
-
-
-    mapping (bytes32 => bytes32) oraclizeIndex; // mapping oraclize IDs with coins
-
-    mapping(bytes32=>bool) validIds;
-
-
-    // tracking events
-    event newOraclizeQuery(string description);
-    event newPriceTicker(uint price);
-    event LogConstructorInitiated(string nextStep);
-    event LogPriceUpdated(string price);
+contract DataOracle is usingProvable {
     
-        modifier onlyOwner {
+    string GET_BTC_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/BTC-USD/ticker).price";
+    string GET_ETH_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price";
+    string GET_BCH_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/BCH-USD/ticker).price";
+    string GET_USD_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/USD/ticker).price";
+    string GET_TUSD_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/TUSD-USD/ticker).price";
+    string GET_BUSD_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/BUSD-USD/ticker).price";
+    string GET_XTZ_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/XTZ-USD/ticker).price";
+    string GET_COMP_PRICE_QUERY = "json(https://api.pro.coinbase.com/products/COMP-USD/ticker).price";
+    
+    event LogNewProvableQuery(string description);
+    event LogNewProvableResult(string result);
+
+    mapping (bytes32 => bool) public pendingQueries;
+    string public result;
+        address public owner;
+
+    constructor() public payable {
+        provable_setProof(proofType_TLSNotary | proofStorage_IPFS);
+        owner = msg.sender;
+        provable_setCustomGasPrice(1000000000 wei);
+        
+    }
+    
+    modifier onlyOwner {
         require(owner == msg.sender);
         _;
     }
@@ -40,84 +34,95 @@ contract DateOracle is usingProvable {
         function changeOraclizeGasPrice(uint _newGasPrice) external onlyOwner {
         provable_setCustomGasPrice(_newGasPrice);
     }
-    
 
-
-    // constructor
-    constructor()public payable {
-        provable_setProof(proofType_TLSNotary | proofStorage_IPFS);
-        emit LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
-        owner = msg.sender;
-        provable_setCustomGasPrice(1000000000 wei);
+    function __callback(bytes32 _myid, string memory _result) public {
+        require(msg.sender == provable_cbAddress());
+        require (pendingQueries[_myid] == true);
+        result = _result;
+        emit LogNewProvableResult(_result);
+        delete pendingQueries[_myid]; // This effectively marks the query id as processed.
     }
 
-
-
-    //oraclize callback method
-    function __callback(bytes32 myid, bytes32 result) public {
-        if (!validIds[myid]) revert();
-        if (msg.sender != provable_cbAddress()) revert();
-        coin_pointer = oraclizeIndex[myid];
-        delete validIds[myid];
-        ETH = result;
-        BTC = result;
-        BCH = result;
-        TUSD = result;
-        BUSD = result;
-        USDT = result;
-        USDC = result;
-        COMP = result;
-        XTZ = result;
-      //  BTCSUB = result;
-        updatePrice();
-    }
-
-
-    // method to place the oraclize queries
-    function updatePrice() onlyOwner public payable returns(bool) {
-        if (provable_getPrice("URL") > (owner.balance)) {
-            emit newOraclizeQuery("Oraclize query was NOT sent, please add some ETH to cover for the query fee");
+    function BTCPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
         } else {
-            emit newOraclizeQuery("Oraclize query was sent, standing by for the answer..");
-            
-            temp_ID = provable_query(60, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = ETH;
-
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/BTC-USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = BTC;
-
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = USDT;
-            
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = USDC;
-            
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/TUSD-USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = TUSD;
-            
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = BUSD;
-            
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/BCH-USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = BCH;
-            
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/XTZ-USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = XTZ;
-            
-            temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/COMP-USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = COMP;
-            
-      /*      temp_ID = provable_query(360, "URL", "json(https://api.pro.coinbase.com/products/BTCSUB-USD/ticker).price",CUSTOM_GASLIMIT);
-            oraclizeIndex[temp_ID] = BTCSUB;
-            
-            */
-            validIds[temp_ID] = true;
-
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_BTC_PRICE_QUERY);
+            pendingQueries[queryId] = true;
         }
-        return true;
     }
-
- 
-
-
+    
+        function ETHPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_ETH_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+        function BCHPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_BCH_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+        function USDPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_USD_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+    
+        function TUSDPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_TUSD_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+        function BUSDPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_BUSD_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+            function XTZPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_XTZ_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+                function COMPPrice() public payable {
+        if (provable_getPrice("URL") > msg.value) {
+            revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
+        } else {
+            emit LogNewProvableQuery("Provable query was sent, standing by for the answer...");
+            bytes32 queryId = provable_query("URL", GET_COMP_PRICE_QUERY);
+            pendingQueries[queryId] = true;
+        }
+    }
+    
+    
 }
