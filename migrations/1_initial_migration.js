@@ -1,5 +1,5 @@
-const BTCsubToken = artifacts.require("BTCsubToken");
+const Migrations = artifacts.require("./Migrations.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(BTCsubToken, 1000000000);
+  deployer.deploy(Migrations);
 };
