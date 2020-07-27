@@ -1,6 +1,6 @@
 # BTCsubToken
 
-### How to run the project
+### How to run the project in your machine.
 
 1. Git clone <https://github.com/BTCsub/BTCsubToken.git>
 2. cd BTCsubToken
