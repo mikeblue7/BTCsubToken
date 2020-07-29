@@ -1,4 +1,5 @@
 pragma solidity ^0.5.0;
+
 import './lib/Oracle/provableAPI_0.5.sol';
 
 contract DataOracle is usingProvable {
@@ -121,7 +122,7 @@ contract DataOracle is usingProvable {
         }
     }
     
-    function COMPPrice() public payable {
+    function COMPprice() public payable {
         if (provable_getPrice("URL") > msg.value) {
             revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
         } else {
@@ -131,7 +132,7 @@ contract DataOracle is usingProvable {
         }
     }
 
-    function LTCPrice() public payable {
+    function LTCprice() public payable {
         if (provable_getPrice("URL") > msg.value) {
             revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
         } else {
@@ -141,7 +142,7 @@ contract DataOracle is usingProvable {
         }
     }
     
-        function ADAPrice() public payable {
+        function ADAprice() public payable {
         if (provable_getPrice("URL") > msg.value) {
             revert("Provable query was NOT sent, please add some ETH to cover for the query fee!");
         } else {
