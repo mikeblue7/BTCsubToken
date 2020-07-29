@@ -1,0 +1,117 @@
+Compiling your contracts...
+===========================
+> Everything is up to date, there is nothing to compile.
+
+
+
+Migrations dry-run (simulation)
+===============================
+> Network name:    'kovan-fork'
+> Network id:      42
+> Block gas limit: 0xbebc20
+
+
+1_initial_migration.js
+======================
+
+   Deploying 'Migrations'
+   ----------------------
+   > block number:        19897471
+   > block timestamp:     1596012213
+   > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
+   > balance:             0.99814297
+   > gas used:            185703
+   > gas price:           10 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00185703 ETH
+
+   -------------------------------------
+   > Total cost:          0.00185703 ETH
+
+
+2_migration.js
+==============
+
+   Deploying 'DataOracle'
+   ----------------------
+   > block number:        19897473
+   > block timestamp:     1596012328
+   > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
+   > balance:             0.95399216
+   > gas used:            4388069
+   > gas price:           10 gwei
+   > value sent:          0 ETH
+   > total cost:          0.04388069 ETH
+
+   -------------------------------------
+   > Total cost:          0.04388069 ETH
+
+
+Summary
+=======
+> Total deployments:   2
+> Final cost:          0.04573772 ETH
+
+
+
+
+
+Starting migrations...
+======================
+> Network name:    'kovan'
+> Network id:      42
+> Block gas limit: 0xbebc20
+
+
+1_initial_migration.js
+======================
+
+   Deploying 'Migrations'
+   ----------------------
+   > transaction hash:    0x69b44e2ffdb664c413bef5ba3f1e6a4190d3b7fd2e6265a54459410af8a5d792
+   > Blocks: 2            Seconds: 5
+   > contract address:    0x2C7CBb5FCD8a03399a549c8b58C74912b91C0a42
+   > block number:        19897531
+   > block timestamp:     1596012444
+   > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
+   > balance:             0.99824905
+   > gas used:            175095
+   > gas price:           10 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00175095 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.00175095 ETH
+
+
+2_migration.js
+==============
+
+   Deploying 'DataOracle'
+   ----------------------
+   > transaction hash:    0xc1faf5ca24a2ad7b3a499dcda997171d70be190f3ad9e0a67df5b54a34f1ad58
+   > Blocks: 3            Seconds: 10
+   > contract address:    0xD9546094Aa6f05D5Aba40cd3a344c40C74de236C
+   > block number:        19897537
+   > block timestamp:     1596012468
+   > account:             0x6B433b61b9b1D07ba96a999B1AaC3f3f6eABcc99
+   > balance:             0.9558016
+   > gas used:            4202393
+   > gas price:           10 gwei
+   > value sent:          0 ETH
+   > total cost:          0.04202393 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.04202393 ETH
+
+
+Summary
+=======
+> Total deployments:   2
+> Final cost:          0.04377488 ETH
